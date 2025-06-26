@@ -66,6 +66,6 @@ Make sure to update your Watsonx credentials (`apikey`, `project_id`) in `app.py
 ## 👥 Team Info
 
 ✍ Team ID -   LTVIP2025TMID32976
--Team Size - 2
--Team Member -  A Varsha
--Team Member -  Achukatla Nazima
+- Team Size - 2
+- Team Member -  A Varsha
+- Team Member -  Achukatla Nazima
