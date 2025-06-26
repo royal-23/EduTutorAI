@@ -46,8 +46,10 @@ def parse_mcqs(text):
 if st.button("Generate Quiz") and topic.strip():
     lang = "in Hindi" if language == "Hindi" else "in English"
     prompt = (
-        f"Generate 5 multiple choice questions {lang} on the topic '{topic}'. "
-        "Each question should have 4 options (A, B, C, D) and mention the correct answer at the end."
+        f"Generate 5 multiple choice questions {lang} on the topic '{topic}'.\\n"
+    "Each question must be clearly numbered (e.g., 1., 2.)\\n"
+    "Each should have exactly 4 options labeled A., B., C., D. on separate lines\\n"
+    "Clearly write 'Correct Answer: <option letter>' at the end of each question block."
     )
     model = ModelInference(
         model_id=model_id,
