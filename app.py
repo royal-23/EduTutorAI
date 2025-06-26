@@ -3,8 +3,8 @@ from ibm_watsonx_ai.foundation_models import ModelInference
 from ibm_watsonx_ai import Credentials
 
 # IBM Watsonx Credentials
-api_key = "your_ibm_api_key"
-project_id = "your_project_id"
+api_key = "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
+project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"
 credentials = Credentials(api_key=api_key, url="https://us-south.ml.cloud.ibm.com")
 
 model = ModelInference(
