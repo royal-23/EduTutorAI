@@ -62,8 +62,7 @@ Each question should be numbered (1., 2., etc)
 Each should have 4 options labeled A., B., C., D.
 Also include the correct answer like: Correct Answer: B"""
             quiz_response = model.generate(mcq_prompt)["results"][0]["generated_text"]
-            st.subheader("🧾 Raw Model Output (for debugging)")
-            st.code(quiz_response)
+
             mcqs = parse_mcqs(quiz_response)
 
         st.subheader("📝 Practice Questions / अभ्यास प्रश्न")
