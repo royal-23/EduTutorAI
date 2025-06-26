@@ -1,59 +1,43 @@
+
 import streamlit as st
 from ibm_watsonx_ai.foundation_models import ModelInference
-import re
+from ibm_watsonx_ai import Credentials
 
-# Watsonx credentials
-model_id = "ibm/granite-3-8b-instruct"
-project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"
-credentials = {
-    "url": "https://us-south.ml.cloud.ibm.com",
-    "apikey": "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
-}
+# IBM Credentials
+api_key = "your_ibm_api_key"
+project_id = "your_project_id"
+credentials = Credentials(api_key=api_key, url="https://us-south.ml.cloud.ibm.com")
 
-st.set_page_config(page_title="EduTutor AI - Bilingual", layout="centered")
-st.title("🌐 EduTutor AI - Explain & Quiz (Hindi/English)")
+model = ModelInference(
+    model_id="google/flan-ul2",
+    params={"decoding_method": "greedy", "max_new_tokens": 800},
+    project_id=project_id,
+    credentials=credentials,
+)
 
-language = st.radio("Choose Language / भाषा चुनें", ["English", "Hindi"])
-topic = st.text_input("Enter a topic / विषय दर्ज करें (e.g., Photosynthesis, पाचन तंत्र):")
+st.title("🎓 EduTutor AI - Explain & Quiz (Hindi/English)")
 
-st.subheader("📄 Generated MCQs")
-st.text_area("MCQs", result, height=400)
+language = st.radio("Choose Language / भाषा चुनें:", ["English", "Hindi"])
+topic = st.text_input("Enter a topic / विषय दर्ज करें (e.g., Photosynthesis, प्रकाश संश्लेषण):")
+mode = st.radio("Choose Mode:", ["Topic Explanation", "MCQ Generator"])
 
-if st.button("Generate Explanation and MCQs") and topic.strip():
-    try:
-        model = ModelInference(
-            model_id=model_id,
-            params={"decoding_method": "greedy", "max_new_tokens": 800},
-            project_id=project_id,
-            credentials=credentials
-        )
+if st.button("Generate") and topic.strip():
+    if language == "Hindi":
+        topic_lang = "हिंदी में"
+        explain_prompt = f""{topic}" विषय को विस्तार से समझाइए।"
+        mcq_prompt = f"{topic} विषय पर 5 बहुविकल्पीय प्रश्न हिंदी में तैयार करें। हर प्रश्न के चार विकल्प (A, B, C, D) और उत्तर सहित।"
+    else:
+        topic_lang = "in English"
+        explain_prompt = f"Explain the topic "{topic}" in detail in simple English."
+        mcq_prompt = f"Generate 5 multiple choice questions {topic_lang} on the topic "{topic}" with four options (A, B, C, D) and mention the correct answer."
 
-        lang = "in Hindi" if language == "Hindi" else "in English"
-
-        with st.spinner("Explaining the topic... / विषय को समझाया जा रहा है..."):
-            exp_prompt = f"Explain the concept of '{topic}' {lang}."
-            explanation = model.generate(exp_prompt)["results"][0]["generated_text"]
-            st.subheader("📖 Explanation / व्याख्या")
-            st.write(explanation)
-
-        with st.spinner("Generating questions... / प्रश्न तैयार किए जा रहे हैं..."):
-            mcq_prompt = f"""Generate 5 multiple choice questions {lang} on the topic '{topic}'.
-Each question should be numbered (1., 2., etc)
-Each should have 4 options labeled A., B., C., D.
-Also include the correct answer like: Correct Answer: B"""
-            quiz_response = model.generate(mcq_prompt)["results"][0]["generated_text"]
-
-            mcqs = parse_mcqs(quiz_response)
-
-        st.subheader("📝 Practice Questions / अभ्यास प्रश्न")
-        if mcqs:
-            for i, q in enumerate(mcqs):
-                st.markdown(f"**Q{i+1}: {q['question']}**")
-                for key, val in q["options"].items():
-                    st.markdown(f"{key}. {val}")
-                st.success(f"✅ Correct Answer: {q['answer']}")
-        else:
-            st.warning("⚠️ No valid MCQs generated. Try another topic. / मान्य प्रश्न नहीं मिले। कृपया दूसरा विषय आज़माएँ।")
-
-    except Exception as e:
-        st.error(f"Something went wrong: {e}")
+    if mode == "Topic Explanation":
+        with st.spinner("Generating explanation..."):
+            response = model.generate(prompt=explain_prompt)
+            st.subheader("📘 Topic Explanation / विषय व्याख्या")
+            st.write(response)
+    else:
+        with st.spinner("Generating MCQs..."):
+            response = model.generate(prompt=mcq_prompt)
+            st.subheader("📝 Generated MCQs / अभ्यास प्रश्न")
+            st.text_area("MCQs", response, height=400)
