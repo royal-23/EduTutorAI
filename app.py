@@ -48,7 +48,7 @@ if st.button("Generate Quiz") and topic.strip():
     prompt = (
         f"Generate 5 multiple choice questions {lang} on the topic '{topic}'.\\n"
     "Each question must be clearly numbered (e.g., 1., 2.)\\n"
-    "Each should have exactly 4 options labeled on separate lines as:\\n
+    "Each should have exactly 4 options labeled on separate lines as:\\n"
     "A. ...\\nB. ...\\nC. ...\\nD. ... \\n"
     "Then write the correct answer as: Correct Answer: <option letter>\\n"
  )
