@@ -4,23 +4,18 @@ import re
 
 # IBM Watsonx credentials (hardcoded)
 model_id = "ibm/granite-3-8b-instruct"
-project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"  # Replace with yours if needed
+project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"
 credentials = {
-    "url": "https://us-south.ml.cloud.ibm.com",  # Dallas region
-    "apikey": "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"  # Replace with your valid API key
+    "url": "https://us-south.ml.cloud.ibm.com",
+    "apikey": "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
 }
 
-# App UI
 st.set_page_config(page_title="EduTutor AI Quiz", layout="centered")
 st.title("🎓 EduTutor AI - Interactive MCQ Quiz")
 
-# Language toggle
 language = st.radio("Choose language:", ("English", "Hindi"))
-
-# Topic input
 topic = st.text_input("Enter a topic (e.g., Photosynthesis, पाचन तंत्र):")
 
-# Store MCQ data between reruns
 if "mcq_data" not in st.session_state:
     st.session_state.mcq_data = []
 
@@ -29,6 +24,8 @@ def parse_mcqs(text):
     blocks = re.split(r"\n\d+\.", text.strip())[1:]
     for block in blocks:
         lines = block.strip().split("\n")
+        if len(lines) < 5:
+            continue
         q_text = lines[0].strip()
         options = {}
         correct = None
@@ -37,9 +34,13 @@ def parse_mcqs(text):
             if match:
                 options[match.group(1)] = match.group(2)
             elif "Correct Answer" in line:
-                correct = line.split(":")[-1].strip()
-        if q_text and options and correct:
-            questions.append({"question": q_text, "options": options, "answer": correct})
+                correct = line.split(":")[-1].strip().upper()
+        if q_text and len(options) == 4 and correct in options:
+            questions.append({
+                "question": q_text,
+                "options": options,
+                "answer": correct
+            })
     return questions
 
 if st.button("Generate Quiz") and topic.strip():
@@ -48,26 +49,26 @@ if st.button("Generate Quiz") and topic.strip():
         f"Generate 5 multiple choice questions {lang} on the topic '{topic}'. "
         "Each question should have 4 options (A, B, C, D) and mention the correct answer at the end."
     )
-
     model = ModelInference(
         model_id=model_id,
         params={"decoding_method": "greedy", "max_new_tokens": 600},
         project_id=project_id,
         credentials=credentials
     )
-
     with st.spinner("Generating your quiz..."):
         response = model.generate(prompt)
         text = response["results"][0]["generated_text"]
-        st.session_state.mcq_data = parse_mcqs(text)
+        parsed = parse_mcqs(text)
+        if not parsed:
+            st.error("⚠️ No complete MCQs found. Please try a different topic.")
+        else:
+            st.session_state.mcq_data = parsed
 
-# Display MCQs
 if st.session_state.mcq_data:
     st.subheader("📝 Take the Quiz")
-
     responses = []
     for i, q in enumerate(st.session_state.mcq_data):
-        st.markdown(f"*Q{i+1}: {q['question']}*")
+        st.markdown(f"**Q{i+1}: {q['question']}**")
         selected = st.radio(f"Select your answer:", list(q["options"].keys()), key=f"q{i}")
         responses.append((selected, q["answer"]))
         st.write("")
@@ -75,7 +76,6 @@ if st.session_state.mcq_data:
     if st.button("Submit Answers"):
         score = sum(1 for user_ans, correct in responses if user_ans == correct)
         st.success(f"✅ You scored {score} out of {len(responses)}")
-
         for i, (user_ans, correct) in enumerate(responses):
             if user_ans != correct:
                 st.error(f"❌ Q{i+1}: Correct answer was {correct}")
