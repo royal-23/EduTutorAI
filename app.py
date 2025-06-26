@@ -30,7 +30,7 @@ def parse_mcqs(text):
         options = {}
         correct = None
         for line in lines[1:]:
-            match = re.match(r"([A-D])\. (.+)", line.strip())
+            match = re.match(r"^[A-D][).:-]?\\S*(.+)", line.strip(),re.IGNORECASE)
             if match:
                 options[match.group(1)] = match.group(2)
             elif "Correct Answer" in line:
@@ -48,9 +48,10 @@ if st.button("Generate Quiz") and topic.strip():
     prompt = (
         f"Generate 5 multiple choice questions {lang} on the topic '{topic}'.\\n"
     "Each question must be clearly numbered (e.g., 1., 2.)\\n"
-    "Each should have exactly 4 options labeled A., B., C., D. on separate lines\\n"
-    "Clearly write 'Correct Answer: <option letter>' at the end of each question block."
-    )
+    "Each should have exactly 4 options labeled on separate lines as:\\n
+    "A. ...\\nB. ...\\nC. ...\\nD. ... \\n"
+    "Then write the correct answer as: Correct Answer: <option letter>\\n"
+ )
     model = ModelInference(
         model_id=model_id,
         params={"decoding_method": "greedy", "max_new_tokens": 600},
@@ -60,6 +61,8 @@ if st.button("Generate Quiz") and topic.strip():
     with st.spinner("Generating your quiz..."):
         response = model.generate(prompt)
         text = response["results"][0]["generated_text"]
+        st.subheader("🧾 Raw Model Output (for debugging)")
+        st.code(text)
         parsed = parse_mcqs(text)
         if not parsed:
             st.error("⚠️ No complete MCQs found. Please try a different topic.")
