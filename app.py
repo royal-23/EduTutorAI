@@ -16,28 +16,8 @@ st.title("🌐 EduTutor AI - Explain & Quiz (Hindi/English)")
 language = st.radio("Choose Language / भाषा चुनें", ["English", "Hindi"])
 topic = st.text_input("Enter a topic / विषय दर्ज करें (e.g., Photosynthesis, पाचन तंत्र):")
 
-def parse_mcqs(text):
-    questions = []
-    blocks = re.split(r"\n?\d+\.\s*", text.strip())[1:]  # Flexible MCQ splitter
-    for block in blocks:
-        lines = block.strip().split("\n")
-        q_text = lines[0].strip()
-        options = {}
-        correct = None
-        for line in lines[1:]:
-            match = re.match(r"^[A-D][).:]?\s+(.+)", line.strip(), re.IGNORECASE)
-            if match:
-                option_letter = line[0].upper()
-                options[option_letter] = match.group(1).strip()
-            elif "Correct Answer" in line or "सही उत्तर" in line:
-                correct = line.split(":")[-1].strip()[0].upper()
-        if q_text and len(options) >= 2 and correct in options:
-            questions.append({
-                "question": q_text,
-                "options": options,
-                "answer": correct
-            })
-    return questions
+st.subheader("📄 Generated MCQs")
+st.text_area("MCQs", result, height=400)
 
 if st.button("Generate Explanation and MCQs") and topic.strip():
     try:
