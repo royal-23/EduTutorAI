@@ -30,8 +30,8 @@ def parse_mcqs(text):
                 option_letter = line[0].upper()
                 options[option_letter] = match.group(1).strip()
             elif "Correct Answer" in line or "सही उत्तर" in line:
-                correct = line.split(":")[-1].strip().upper()
-        if q_text and len(options) == 4 and correct in options:
+                correct = line.split(":")[-1].strip()[0].upper()
+        if q_text and len(options) >= 2 and correct in options:
             questions.append({
                 "question": q_text,
                 "options": options,
