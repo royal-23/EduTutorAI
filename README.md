@@ -42,7 +42,3 @@ An AI-powered educational tool that generates multiple-choice questions for any 
 > **Answer: B**
 
 ## 👥 Team
-- Hitesh (Team Leader)
-- Koushik Kumar
-- Mahesh Reddy
-- Bandla Mounika
