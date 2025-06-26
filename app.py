@@ -21,18 +21,17 @@ if "mcq_data" not in st.session_state:
 
 def parse_mcqs(text):
     questions = []
-    blocks = re.split(r"\n\d+\.", text.strip())[1:]
+    blocks = re.split(r"\\n?\\d+\\. ", text.strip())[1:]  # split on numbered MCQs
     for block in blocks:
-        lines = block.strip().split("\n")
-        if len(lines) < 5:
-            continue
+        lines = block.strip().split("\\n")
         q_text = lines[0].strip()
         options = {}
         correct = None
         for line in lines[1:]:
-            match = re.match(r"^[A-D][).:-]?\\S*(.+)", line.strip(),re.IGNORECASE)
+            match = re.match(r"^[A-D][).:]?\\s+(.+)", line.strip(), re.IGNORECASE)
             if match:
-                options[match.group(1)] = match.group(2)
+                option_letter = line[0].upper()
+                options[option_letter] = match.group(1).strip()
             elif "Correct Answer" in line:
                 correct = line.split(":")[-1].strip().upper()
         if q_text and len(options) == 4 and correct in options:
