@@ -1,32 +1,45 @@
 import streamlit as st
 from ibm_watsonx_ai.foundation_models import ModelInference
-from ibm_watsonx_ai import Credentials
 
-# IBM Watsonx Credentials
-api_key = "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
+# IBM Watsonx model credentials
+model_id = "ibm/granite-3-8b-instruct"
 project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"
-credentials = Credentials(api_key=api_key, url="https://us-south.ml.cloud.ibm.com")
+credentials = {
+    "url": "https://us-south.ml.cloud.ibm.com",
+    "apikey": "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
+}
 
-model = ModelInference(
-    model_id="google/flan-t5-xl",
-    params={"decoding_method": "greedy", "max_new_tokens": 600},
-    project_id=project_id,
-    credentials=credentials
-)
-
+# UI
+st.set_page_config(page_title="EduTutor AI - Explain & MCQ", layout="centered")
 st.title("📘 EduTutor AI - Explain & Quiz")
+st.markdown("Get an explanation or generate MCQs for any topic using AI.")
 
-topic = st.text_input("Enter a topic (e.g., Photosynthesis):")
-
-mode = st.radio("Choose Mode", ["Topic Explanation", "MCQ Generator"])
+# Topic and mode
+topic = st.text_input("Enter a topic (e.g., Photosynthesis, Gravity, etc.)")
+mode = st.radio("Choose what to generate:", ["Topic Explanation", "MCQ Generator"])
 
 if st.button("Generate") and topic.strip():
+    # Construct prompt based on mode
     if mode == "Topic Explanation":
-        prompt = f"Explain the topic {topic} in a simple and clear way."
+        prompt = f"Explain the topic '{topic}' in detail as if teaching a student."
     else:
-        prompt = f"Generate 5 multiple choice questions on the topic {topic}.\nEach question must have 4 options (A, B, C, D) and provide the correct answer."
+        prompt = (
+            f"Generate 5 multiple choice questions on the topic '{topic}'. "
+            f"Each question should have 4 options (A, B, C, D) and indicate the correct answer at the end."
+        )
 
-    result = model.generate(prompt)
-    
-    st.subheader("📄 Generated Output")
-    st.text_area("Output", result, height=400)
+    # Model inference
+    model = ModelInference(
+        model_id=model_id,
+        params={"decoding_method": "greedy", "max_new_tokens": 600},
+        project_id=project_id,
+        credentials=credentials
+    )
+
+    # Display result
+    with st.spinner("Generating response..."):
+        response = model.generate(prompt)
+        result_text = response["results"][0]["generated_text"]
+
+    st.markdown("### 📄 Generated Output")
+    st.markdown(result_text)
