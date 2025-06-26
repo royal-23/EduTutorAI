@@ -18,7 +18,7 @@ topic = st.text_input("Enter a topic / विषय दर्ज करें (e
 
 def parse_mcqs(text):
     questions = []
-    blocks = re.split(r"\n?\d+\. ", text.strip())[1:]
+    blocks = re.split(r"\n?\d+\.\s*", text.strip())[1:]  # Flexible MCQ splitter
     for block in blocks:
         lines = block.strip().split("\n")
         q_text = lines[0].strip()
@@ -50,20 +50,20 @@ if st.button("Generate Explanation and MCQs") and topic.strip():
 
         lang = "in Hindi" if language == "Hindi" else "in English"
 
-        # Explanation
         with st.spinner("Explaining the topic... / विषय को समझाया जा रहा है..."):
             exp_prompt = f"Explain the concept of '{topic}' {lang}."
             explanation = model.generate(exp_prompt)["results"][0]["generated_text"]
             st.subheader("📖 Explanation / व्याख्या")
             st.write(explanation)
 
-        # MCQs
         with st.spinner("Generating questions... / प्रश्न तैयार किए जा रहे हैं..."):
             mcq_prompt = f"""Generate 5 multiple choice questions {lang} on the topic '{topic}'.
 Each question should be numbered (1., 2., etc)
 Each should have 4 options labeled A., B., C., D.
 Also include the correct answer like: Correct Answer: B"""
             quiz_response = model.generate(mcq_prompt)["results"][0]["generated_text"]
+            st.subheader("🧾 Raw Model Output (for debugging)")
+            st.code(quiz_response)
             mcqs = parse_mcqs(quiz_response)
 
         st.subheader("📝 Practice Questions / अभ्यास प्रश्न")
