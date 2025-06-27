@@ -9,24 +9,34 @@ credentials = {
     "apikey": st.secrets["IBM_API_KEY"]
 }
 
-# UI
+# Streamlit UI
 st.set_page_config(page_title="EduTutor AI - Explain & MCQ", layout="centered")
-st.title("📘 EduTutor AI - Explain & Quiz")
+st.title("📘 EduTutor AI - Explain & Quiz (English / हिंदी)")
 st.markdown("Get an explanation or generate MCQs for any topic using AI.")
 
-# Topic and mode
-topic = st.text_input("Enter a topic (e.g., Photosynthesis, Gravity, etc.)")
-mode = st.radio("Choose what to generate:", ["Topic Explanation", "MCQ Generator"])
+# Language selection
+language = st.radio("Choose Language / भाषा चुनें:", ["English", "Hindi"])
+topic = st.text_input("Enter a topic (e.g., Photosynthesis) / विषय दर्ज करें:")
+mode = st.radio("Choose what to generate / क्या जनरेट करना है:", ["Topic Explanation", "MCQ Generator"])
 
 if st.button("Generate") and topic.strip():
-    # Construct prompt based on mode
-    if mode == "Topic Explanation":
-        prompt = f"Explain the topic '{topic}' in detail as if teaching a student."
+    # Prompt creation based on language and mode
+    if language == "English":
+        if mode == "Topic Explanation":
+            prompt = f"Explain the topic '{topic}' in detail as if teaching a student."
+        else:
+            prompt = (
+                f"Generate 5 multiple choice questions on the topic '{topic}'. "
+                f"Each question should have 4 options (A, B, C, D) and indicate the correct answer at the end."
+            )
     else:
-        prompt = (
-            f"Generate 5 multiple choice questions on the topic '{topic}'. "
-            f"Each question should have 4 options (A, B, C, D) and indicate the correct answer at the end."
-        )
+        if mode == "Topic Explanation":
+            prompt = f"विषय '{topic}' को एक छात्र को पढ़ाते समय विस्तार से समझाएं।"
+        else:
+            prompt = (
+                f"विषय '{topic}' पर 5 बहुविकल्पीय प्रश्न (MCQs) बनाएं। "
+                f"प्रत्येक प्रश्न में 4 विकल्प (A, B, C, D) हों और उत्तर भी शामिल करें।"
+            )
 
     # Model inference
     model = ModelInference(
@@ -36,10 +46,10 @@ if st.button("Generate") and topic.strip():
         credentials=credentials
     )
 
-    # Display result
+    # Display results
     with st.spinner("Generating response..."):
         response = model.generate(prompt)
         result_text = response["results"][0]["generated_text"]
 
-    st.markdown("### 📄 Generated Output")
+    st.markdown("### 📄 Generated Output / उत्पन्न उत्तर")
     st.markdown(result_text)
