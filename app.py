@@ -6,7 +6,7 @@ model_id = "ibm/granite-3-8b-instruct"
 project_id = "d87960d2-d01f-44ba-81ef-a16ad656ad73"
 credentials = {
     "url": "https://us-south.ml.cloud.ibm.com",
-    "apikey": "lvdUcs_gbbGG-ltm33r7akvMn9EpCQYuI_z7YInwDK_C"
+    "apikey": st.secrets["IBM_API_KEY"]
 }
 
 # UI
